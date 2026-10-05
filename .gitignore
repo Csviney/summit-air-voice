@@ -1,0 +1,64 @@
+# Dependencies and generated files.
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local secrets; keep the placeholder template.
+.env
+.env.*
+!.env.example
+.envrc
+.npmrc
+.netrc
+secrets/
+credentials/
+*credentials*.json
+*service-account*.json
+*service_account*.json
+client_secret*.json
+token*.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Call records, database files, and exports.
+var/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+/exports/
+/recordings/
+/transcripts/
+
+# Logs and temporary debugging files.
+logs/
+*.log
+*.log.*
+.repro.*
+*.bak
+*.backup
+*.tmp
+*.swp
+*.swo
+
+# Markdown docs stay local.
+*.[mM][dD]
+*.[mM][dD][xX]
+*.markdown
+/architecture/
+
+# Local editor, agent, and cloud settings.
+.DS_Store
+.idea/
+.vscode/
+.agents/
+.codex/
+.claude/
+.aws/
+.gcloud/
+.cache/

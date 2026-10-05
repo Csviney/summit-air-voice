@@ -1,0 +1,78 @@
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --text: #1d1d1b;
+  --muted: #6b6b66;
+  --line: #e2e2dd;
+  --accent: #1f5f8b;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615;
+    --surface: #1f1f1d;
+    --text: #ececea;
+    --muted: #9a9a94;
+    --line: #34342f;
+    --accent: #7db4dc;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+a { color: var(--accent); }
+main { max-width: 960px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 1.4rem; margin: 8px 0 16px; }
+h2 { font-size: 1rem; margin: 0 0 8px; }
+
+section {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+table { width: 100%; border-collapse: collapse; background: var(--surface); }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+
+dl { display: grid; grid-template-columns: minmax(140px, 220px) 1fr; gap: 6px 16px; margin: 0; }
+dt { color: var(--muted); }
+dd { margin: 0; overflow-wrap: anywhere; }
+
+.missing { color: var(--muted); font-style: italic; }
+.note { color: var(--muted); font-size: 0.85rem; margin: 4px 0; }
+
+details summary { cursor: pointer; font-weight: 600; margin-top: 12px; }
+.transcript { list-style: none; padding: 0; margin: 8px 0 0; }
+.transcript li { border-top: 1px solid var(--line); padding: 8px 0; }
+.transcript p { margin: 4px 0 0; overflow-wrap: anywhere; }
+.speaker { font-weight: 600; }
+.time { color: var(--muted); font-size: 0.85rem; }
+.next-step { font-weight: 600; }
+
+@media (max-width: 640px) {
+  table, thead, tbody, tr, td { display: block; }
+  thead { display: none; }
+  tr { border-bottom: 1px solid var(--line); padding: 8px 0; }
+  td { border: 0; padding: 2px 8px; }
+  dl { grid-template-columns: 1fr; }
+  dd { margin-bottom: 8px; }
+}
