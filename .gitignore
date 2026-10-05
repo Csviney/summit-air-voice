@@ -40,17 +40,24 @@ logs/
 *.log
 *.log.*
 .repro.*
+.probe.*
+.fire-probe.*
+/probes/
+/tmp/
+/temp/
 *.bak
 *.backup
 *.tmp
 *.swp
 *.swo
 
-# Markdown docs stay local.
+# Only the root README is published.
 *.[mM][dD]
 *.[mM][dD][xX]
 *.markdown
+*.MARKDOWN
 /architecture/
+!/README.md
 
 # Local editor, agent, and cloud settings.
 .DS_Store

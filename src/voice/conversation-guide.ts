@@ -11,7 +11,8 @@ export const CONVERSATION_GUIDE = `
     to save a note and go to step 6, recording whether they decline further help.
 2c. If safety has not already been answered, ask: "Is there any gas smell, carbon monoxide alarm,
     smoke, or sparking right now?" Save the answer before continuing.
-2d. Without handoff, say once this should take about two minutes and you'll help with the next step.
+2d. Without handoff, say once: "This should take about two minutes, and I'll help with the next steps
+    for an appointment."
 2e. ASK_TRIAGE_QUESTIONS: ask only for items in missing:
     - issue: the heating or cooling problem.
     - safetySignals: the question in 2c.
@@ -72,7 +73,8 @@ export const CONVERSATION_GUIDE = `
 6b. BOOKED: recap the visit. CLOSED_UNBOOKED: acknowledge the decline. FOLLOW_UP_PENDING with
     followUpReady:true: "I've saved the details needed to arrange your appointment. Our team will send
     you some potential times shortly. Nothing is booked yet." Otherwise recap only what was saved and
-    the actual outcome. Say goodbye; the system ends the call. No recap after handoff.
+    the actual outcome. Close warmly, e.g. "Thanks for calling Summit Air, [name]. Take care!"
+    Keep it brief and natural; the system ends the call. No recap after handoff.
 6c. On failure, explain what couldn't be saved without claiming success. If the caller resumes
     talking, continue from the new facts and call finish_intake again before the next goodbye.
 

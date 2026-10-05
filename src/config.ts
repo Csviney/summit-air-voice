@@ -13,6 +13,7 @@ const EnvSchema = z.object({
   GOOGLE_REFRESH_TOKEN: z.string().min(1),
   GOOGLE_CALENDAR_ID: z.string().min(1),
   DEMO_PASSWORD: z.string().min(12),
+  HOST: z.string().min(1).default('localhost'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   DATABASE_PATH: z.string().min(1).default('var/summit-air.db'),
 });
@@ -36,6 +37,7 @@ export type Config = {
   publicOrigin: string;
   google: { clientId: string; clientSecret: string; refreshToken: string; calendarId: string };
   demoPassword: string;
+  host: string;
   port: number;
   databasePath: string;
 };
@@ -62,6 +64,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       calendarId: values.GOOGLE_CALENDAR_ID,
     },
     demoPassword: values.DEMO_PASSWORD,
+    host: values.HOST,
     port: values.PORT,
     databasePath: values.DATABASE_PATH,
   };

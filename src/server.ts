@@ -20,9 +20,10 @@ if (recovered.length) console.log(`Marked ${recovered.length} interrupted call(s
 
 const calendar = googleCalendarClient(config.google);
 const app = await buildApp(config, store, { calendar });
-await app.listen({ port: config.port, host: 'localhost' });
+await app.listen({ port: config.port, host: config.host });
 console.log(`Summit Air voice listening on port ${config.port}; public origin ${config.publicOrigin}`);
-console.log(`Demo view: http://localhost:${config.port}/demo (user "demo")`);
+const demoOrigin = process.env.K_SERVICE ? config.publicOrigin : `http://localhost:${config.port}`;
+console.log(`Demo view: ${demoOrigin}/demo (user "demo")`);
 
 // Calendar writes left pending or uncertain by a restart are settled by looking them up by ID.
 reconcileBookings({ store, calendar, config }).catch((error: Error) =>

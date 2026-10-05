@@ -123,6 +123,14 @@ export function createTools(deps: { store: Store; calls: CallControl; calendar: 
       'mentions; use [] when the caller says there is none. Returns the priority and what to do next.',
     parameters: IntakeUpdate,
     strict: true,
+    errorFunction: (runContext) => JSON.stringify(hasEnded(runContext?.context) ? callEnded : {
+      ok: false,
+      code: 'INVALID_INPUT',
+      message: 'Nothing was saved. Retry with only the new facts and valid schema values. For clear current danger, ' +
+        'send only safetySignals, e.g. {"safetySignals":["FIRE_SMOKE"]} for a current fire, then follow nextAction. ' +
+        'Do not ask intake questions or repeat failed arguments while handling current danger.',
+      retryable: true,
+    }),
     execute: async (input, runContext) => {
       if (hasEnded(runContext?.context)) return callEnded;
       const call = callState(runContext?.context);

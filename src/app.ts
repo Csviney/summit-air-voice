@@ -28,6 +28,7 @@ export async function buildApp(
   );
 
   await app.register(fastifyWebsocket);
+  app.get('/health', async () => ({ status: 'ok' }));
   voiceRoutes(app, config, store, startCall);
   demoRoutes(app, config, store);
   return app;

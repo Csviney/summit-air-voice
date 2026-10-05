@@ -3,6 +3,7 @@ import { TwilioRealtimeTransportLayer } from '@openai/agents-extensions';
 import twilio from 'twilio';
 import type { WebSocket } from 'ws';
 import type { Config } from '../config.ts';
+import { intakeValidationIssues } from '../contracts.ts';
 import type { CalendarClient } from '../calendar.ts';
 import { SCRIPT_VOICE, type CallControl } from '../escalation.ts';
 import { recordStreamClosed, saveReadyFollowUp } from '../intake.ts';
@@ -244,6 +245,10 @@ export function startCall(
     const key = toolCallKey(details, tool.name);
     toolStartedAt.set(key, Date.now());
     diagnostic(`tool start ${tool.name} call=${logCode(key)}`);
+    if (tool.name === 'update_intake' && details.toolCall.type === 'function_call') {
+      const issues = intakeValidationIssues(details.toolCall.arguments);
+      if (issues.length) diagnostic(`update_intake invalid fields=${JSON.stringify(issues)} call=${logCode(key)}`);
+    }
   });
   session.on('agent_tool_end', (_context, _agent, tool, result, details) => {
     toolsInFlight = Math.max(0, toolsInFlight - 1);

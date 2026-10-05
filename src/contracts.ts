@@ -105,7 +105,9 @@ const IntakeUpdateFields = z.strictObject({
   callbackPhone: text(40).nullable(),
   propertyType: PropertyType.nullable(),
   address: Address.nullable(),
-  issueCategory: IssueCategory.nullable(),
+  issueCategory: IssueCategory.nullable().describe(
+    'Service issue only. Fire, smoke, electrical danger, and medical emergencies belong in safetySignals, not here.',
+  ),
   issueSummary: text(500).nullable(),
   systemImpact: SystemImpact.nullable().describe(
     'COMPLETE_OUTAGE only if the heating or cooling produces nothing at all; PARTIAL if it runs poorly.',
@@ -141,6 +143,21 @@ const IntakeUpdateFields = z.strictObject({
 export const IntakeUpdate = omittedAsNull(IntakeUpdateFields);
 
 export type IntakeUpdate = z.infer<typeof IntakeUpdate>;
+
+// Report only known schema fields and error codes, never rejected values or unknown keys.
+export function intakeValidationIssues(raw: string): { field: string; code: string }[] {
+  try {
+    const parsed = IntakeUpdate.safeParse(JSON.parse(raw));
+    if (parsed.success) return [];
+    const fields = new Set([...Object.keys(IntakeUpdateFields.shape), ...Object.keys(AddressFields.shape)]);
+    return parsed.error.issues.map((issue) => ({
+      field: issue.path.filter((part) => typeof part === 'string' && fields.has(part)).join('.') || 'input',
+      code: issue.code,
+    }));
+  } catch {
+    return [{ field: 'input', code: 'invalid_json' }];
+  }
+}
 
 // An omitted callerDeclined means "not declined": declining must be explicit.
 export const FinishIntakeInput = z.preprocess(

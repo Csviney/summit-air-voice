@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { RunContext } from '@openai/agents';
 import { loadConfig } from '../src/config.ts';
+import { intakeValidationIssues } from '../src/contracts.ts';
 import { openStore, type Store } from '../src/store.ts';
 import type { CalendarClient } from '../src/calendar.ts';
 import { createTools, type CallContext } from '../src/voice/tools.ts';
@@ -98,6 +99,61 @@ test('update_intake accepts the partial arguments the realtime model actually se
   const extra = await call.updateIntake({ callerName: 'Test Caller', priorityTier: 'P0' });
   assert.notEqual(extra.ok, true);
   assert.equal(store.getRequestForCall(id)!.priorityTier, null);
+});
+
+test('a rejected emergency update can be corrected without losing the safety handoff', async (t) => {
+  const store = openStore(':memory:');
+  t.after(() => store.close());
+  const id = store.createCall('CA_FIRE_VALIDATION', null);
+  const context: CallContext = { call: { callSessionId: id, callSid: 'CA_FIRE_VALIDATION', priority: null, finishedAt: null, handedOff: false, agentMuted: false, ended: false, callerTurn: 1, humanAskTurn: null, proposedVisit: null } };
+  const call = tools(store, context);
+  const invalid = {
+    issueCategory: 'FIRE_SMOKE', safetySignals: ['FIRE_SMOKE'], callerName: 'Private Test Caller',
+  };
+  const rejected = await call.updateIntake(invalid);
+  const issues = intakeValidationIssues(JSON.stringify(invalid));
+  assert.equal(rejected.code, 'INVALID_INPUT');
+  assert.deepEqual(issues, [{ field: 'issueCategory', code: 'invalid_value' }]);
+  assert.match(rejected.message, /only safetySignals/);
+  assert.equal(store.getRequestForCall(id)!.priorityTier, null);
+  assert.doesNotMatch(JSON.stringify({ rejected, issues }), /Private Test Caller/);
+  assert.equal((await call.escalate()).code, 'NOT_ESCALATABLE');
+
+  const corrected = await call.updateIntake({ safetySignals: ['FIRE_SMOKE'] });
+  assert.equal(corrected.data.nextAction, 'EMERGENCY_GUIDANCE');
+  assert.equal((await call.escalate()).data.status, 'GUIDANCE_ISSUED');
+  assert.match(call.redirects[0]!, /Get everyone out now, and call 911 from a safe place/);
+  assert.match(call.redirects[0]!, /<Hangup\/>/);
+  assert.doesNotMatch(call.redirects[0]!, /<Dial/);
+  assert.equal(context.call.handedOff, true);
+});
+
+test('invalid safety signals and injected fields stay rejected, and ended calls cannot retry', async (t) => {
+  const store = openStore(':memory:');
+  t.after(() => store.close());
+  const id = store.createCall('CA_INVALID_SAFETY', null);
+  const context: CallContext = { call: { callSessionId: id, callSid: 'CA_INVALID_SAFETY', priority: null, finishedAt: null, handedOff: false, agentMuted: false, ended: false, callerTurn: 1, humanAskTurn: null, proposedVisit: null } };
+  const call = tools(store, context);
+  for (const input of [
+    { safetySignals: ['private-invalid-value'] },
+    { safetySignals: ['FIRE_SMOKE'], 'private-injected-key': 'private-invalid-value' },
+    { safetySignals: ['FIRE_SMOKE'], priorityTier: 'P0' },
+  ]) {
+    const rejected = await call.updateIntake(input);
+    assert.equal(rejected.code, 'INVALID_INPUT');
+    const issues = intakeValidationIssues(JSON.stringify(input));
+    assert.doesNotMatch(JSON.stringify({ rejected, issues }), /private-/);
+    assert.equal(store.getRequestForCall(id)!.priorityTier, null);
+  }
+  assert.deepEqual(intakeValidationIssues('{private-malformed'), [{ field: 'input', code: 'invalid_json' }]);
+  assert.deepEqual(intakeValidationIssues('{"safetySignals":["FIRE_SMOKE"]}'), []);
+  const none = await call.updateIntake({ safetySignals: [] });
+  assert.notEqual(none.data.nextAction, 'EMERGENCY_GUIDANCE');
+  assert.equal((await call.escalate()).code, 'NOT_ESCALATABLE');
+  context.call.ended = true;
+  assert.equal((await call.updateIntake({ safetySignals: ['invalid'] })).code, 'CALL_ENDED');
+  assert.equal((await call.updateIntake({ safetySignals: ['FIRE_SMOKE'] })).code, 'CALL_ENDED');
+  assert.equal(call.redirects.length, 0);
 });
 
 test('tools refuse to act once the caller has hung up', async () => {

@@ -1,0 +1,12 @@
+# Upload only the files needed for the container build.
+**
+!Dockerfile
+!.dockerignore
+!.gcloudignore
+!package.json
+!package-lock.json
+!src/
+!src/**/
+!src/**/*.ts
+!src/**/*.sql
+!src/**/*.css

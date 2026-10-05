@@ -1,0 +1,11 @@
+# Only app source and dependency manifests belong in the image.
+**
+!Dockerfile
+!.dockerignore
+!package.json
+!package-lock.json
+!src/
+!src/**/
+!src/**/*.ts
+!src/**/*.sql
+!src/**/*.css
